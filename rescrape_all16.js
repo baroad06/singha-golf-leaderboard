@@ -66,7 +66,7 @@ function parse(text) {
   await browser.close();
 
   const fs = require('fs');
-  fs.writeFileSync('/data/.openclaw/workspace/golf-leaderboard/leaderboard_data.json', JSON.stringify(allData, null, 2));
+  fs.writeFileSync('leaderboard_data.json', JSON.stringify(allData, null, 2));
 
   let total = 0;
   allData.forEach(t => {
