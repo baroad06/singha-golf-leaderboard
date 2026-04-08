@@ -9,21 +9,18 @@
   <style>
     body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
     .th { background-color: #16a34a; color: white; }
-    .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1f2937; font-weight: 800; }
-    .rank-2 { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: #1f2937; font-weight: 700; }
-    .rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d); color: white; font-weight: 700; }
+    .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b) !important; color: #1f2937; font-weight: 800; }
+    .rank-2 { background: linear-gradient(135deg, #d1d5db, #9ca3af) !important; color: #1f2937; font-weight: 700; }
+    .rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d) !important; color: white; font-weight: 700; }
     .even { background: #f9fafb; }
     .odd { background: #ffffff; }
     .score-neg { color: #059669; font-weight: 700; }
     .score-pos { color: #dc2626; font-weight: 600; }
     .score-zero { color: #374151; font-weight: 700; }
-    .refresh-btn { transition: transform 0.1s; }
-    .refresh-btn:active { transform: scale(0.96); }
     .tournament-chip { background: #16a34a; color: white; font-size: 11px; padding: 3px 10px; border-radius: 9999px; cursor: pointer; transition: background 0.2s; }
     .tournament-chip:hover { background: #15803d; }
     .tournament-chip.inactive { background: #9ca3af; }
     .tournament-chip.no-data { background: #e5e7eb; color: #6b7280; cursor: default; }
-    .tournament-chip.no-data:hover { background: #e5e7eb; }
   </style>
 </head>
 <body>
@@ -33,17 +30,14 @@
     <div class="flex items-center justify-between mb-5">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">🏌️ Combined Golf Leaderboard</h1>
-        <p class="text-sm text-gray-500 mt-1" id="subtitle">—</p>
+        <p class="text-sm text-gray-500 mt-1" id="subtitle">Loading...</p>
       </div>
-      <div class="flex items-center gap-3">
-        <div id="lastUpdated" class="text-xs text-gray-400"></div>
-        <button id="refreshBtn" onclick="refreshData()" class="refresh-btn flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow">
-          <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          <span id="refreshLabel">Refresh</span>
-        </button>
-      </div>
+      <button onclick="location.reload()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition-all active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh
+      </button>
     </div>
 
     <!-- Tournament pills -->
@@ -58,7 +52,6 @@
       <select id="sortSelect" onchange="renderTable()" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
         <option value="score">Sort by Score</option>
         <option value="name">Sort by Name</option>
-        <option value="tournament">Sort by Tournament</option>
       </select>
       <div class="ml-auto text-sm text-gray-500" id="totalCount">—</div>
     </div>
@@ -72,7 +65,7 @@
               <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-10 cursor-pointer" onclick="toggleSort()" title="Toggle sort">#</th>
               <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Player</th>
               <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider">Tournament</th>
-              <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-16 cursor-pointer" onclick="toggleSort()" title="Toggle sort">Score</th>
+              <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-16 cursor-pointer" onclick="toggleSort()">Score</th>
               <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-12">Thru</th>
               <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-12">Total</th>
             </tr>
@@ -83,7 +76,6 @@
       <div id="noDataMsg" class="hidden text-center py-12 text-gray-400">
         <div class="text-4xl mb-2">🏌️</div>
         <p class="text-lg">No leaderboard data</p>
-        <p class="text-sm mt-1 text-gray-400">Click Refresh to load data</p>
       </div>
     </div>
 
@@ -91,83 +83,79 @@
   </div>
 
   <script>
-    // ─── SCRAPED DATA ────────────────────────────────────────
-    const RAW_DATA = [
-      {name:"T1",rows:[
-        {rank:"1",player:"C.Chonlasit",score:"-2",thru:"F",total:"33"},
-        {rank:"2",player:"Palmoo",score:"E",thru:"F",total:"35"},
-        {rank:"4",player:"YNOT Golf",score:"+3",thru:"F",total:"38"},
-        {rank:"5",player:"Supichaya",score:"+4",thru:"F",total:"41"},
-        {rank:"6",player:"palmmy",score:"+5",thru:"F",total:"40"},
-        {rank:"7",player:"summer150",score:"+6",thru:"F",total:"41"},
-        {rank:"9",player:"Suphasingh",score:"+8",thru:"F",total:"43"},
-        {rank:"10",player:"Samwcrt",score:"+10",thru:"F",total:"45"},
-        {rank:"11",player:"Bordee W.",score:"+13",thru:"F",total:"48"},
-        {rank:"13",player:"KOSHIRO_KO",score:"+14",thru:"F",total:"49"},
-        {rank:"14",player:"Noi1951",score:"+15",thru:"F",total:"52"},
-        {rank:"15",player:"Dew Wijitra",score:"+22",thru:"F",total:"59"},
-        {rank:"16",player:"พรพรหม",score:"+23",thru:"F",total:"58"},
-        {rank:"17",player:"napassanan",score:"+26",thru:"F",total:"63"}
+    // ─── CLEANED DATA ────────────────────────────────────────
+    // Rows with properly structured player/score data only
+    const CLEAN_DATA = [
+      { name: "T1", rows: [
+        { player: "C.Chonlasit", score: "-2", thru: "F", total: "33" },
+        { player: "Palmoo", score: "E", thru: "F", total: "35" },
+        { player: "YNOT Golf", score: "+3", thru: "F", total: "38" },
+        { player: "Supichaya", score: "+4", thru: "F", total: "41" },
+        { player: "palmmy", score: "+5", thru: "F", total: "40" },
+        { player: "summer150", score: "+6", thru: "F", total: "41" },
+        { player: "Suphasingh", score: "+8", thru: "F", total: "43" },
+        { player: "Samwcrt", score: "+10", thru: "F", total: "45" },
+        { player: "Bordee W.", score: "+13", thru: "F", total: "48" },
+        { player: "KOSHIRO_KO", score: "+14", thru: "F", total: "49" },
+        { player: "Noi1951", score: "+15", thru: "F", total: "52" },
+        { player: "Dew Wijitra", score: "+22", thru: "F", total: "59" },
+        { player: "พรพรหม", score: "+23", thru: "F", total: "58" },
+        { player: "napassanan", score: "+26", thru: "F", total: "63" }
       ]},
-      {name:"T3",rows:[
-        {rank:"1",player:"Praratakorn P.",score:"+1",thru:"F",total:"36"},
-        {rank:"2",player:"Tonyyy.",score:"+2",thru:"F",total:"37"},
-        {rank:"3",player:"Knot T",score:"+5",thru:"F",total:"40"}
+      { name: "T3", rows: [
+        { player: "Praratakorn P.", score: "+1", thru: "F", total: "36" },
+        { player: "Tonyyy.", score: "+2", thru: "F", total: "37" },
+        { player: "Knot T", score: "+5", thru: "F", total: "40" }
       ]},
-      {name:"T4",rows:[
-        {rank:"1",player:"hjiew",score:"+2",thru:"F",total:"37"},
-        {rank:"Mana Sawaree",player:"+2",score:"F",thru:"37",total:"3"}
+      { name: "T4", rows: [
+        { player: "hjiew", score: "+2", thru: "F", total: "37" },
+        { player: "Mana Sawaree", score: "+2", thru: "F", total: "37" },
+        { player: "TonyNFTG", score: "+7", thru: "F", total: "42" },
+        { player: "morsiam", score: "+10", thru: "F", total: "45" },
+        { player: "Built_Built", score: "+20", thru: "F", total: "55" }
       ]},
-      {name:"T5",rows:[
-        {rank:"1",player:"MrNanostar",score:"-1",thru:"F",total:"34"},
-        {rank:"2",player:"Chaiwat Kothum",score:"+2",thru:"F",total:"37"},
-        {rank:"3",player:"Chawan Maliwan",score:"+6",thru:"F",total:"41"},
-        {rank:"4",player:"Lerdrit Limsurut",score:"+10",thru:"F",total:"45"}
+      { name: "T5", rows: [
+        { player: "MrNanostar", score: "-1", thru: "F", total: "34" },
+        { player: "Chaiwat Kothum", score: "+2", thru: "F", total: "37" },
+        { player: "Chawan Maliwan", score: "+6", thru: "F", total: "41" },
+        { player: "Lerdrit Limsurut", score: "+10", thru: "F", total: "45" }
       ]},
-      {name:"T6",rows:[
-        {rank:"1",player:"HappyFri",score:"E",thru:"F",total:"35"},
-        {rank:"2",player:"thassanee khampaengnil",score:"+1",thru:"F",total:"38"},
-        {rank:"3",player:"Narirat Khampaengnil",score:"+2",thru:"F",total:"39"},
-        {rank:"4",player:"Pro Kong",score:"+7",thru:"F",total:"42"}
+      { name: "T6", rows: [
+        { player: "HappyFri", score: "E", thru: "F", total: "35" },
+        { player: "thassanee khampaengnil", score: "+1", thru: "F", total: "38" },
+        { player: "Narirat Khampaengnil", score: "+2", thru: "F", total: "39" },
+        { player: "Pro Kong", score: "+7", thru: "F", total: "42" }
       ]},
-      {name:"T7",rows:[
-        {rank:"1",player:"piya likitpunyarat",score:"+8",thru:"F",total:"43"}
+      { name: "T7", rows: [
+        { player: "piya likitpunyarat", score: "+8", thru: "F", total: "43" }
       ]},
-      {name:"T10",rows:[
-        {rank:"1",player:"Popy.S",score:"-3",thru:"F",total:"32"},
-        {rank:"2",player:"Game S",score:"+2",thru:"F",total:"37"},
-        {rank:"3",player:"Seunghoon34",score:"+5",thru:"F",total:"40"},
-        {rank:"4",player:"Alex_82",score:"+7",thru:"F",total:"42"}
+      { name: "T10", rows: [
+        { player: "Popy.S", score: "-3", thru: "F", total: "32" },
+        { player: "Game S", score: "+2", thru: "F", total: "37" },
+        { player: "Seunghoon34", score: "+5", thru: "F", total: "40" },
+        { player: "Alex_82", score: "+7", thru: "F", total: "42" }
       ]},
-      {name:"T12",rows:[
-        {rank:"1",player:"Tawin Sae-ung",score:"-2",thru:"F",total:"35"},
-        {rank:"2",player:"morsiam",score:"+4",thru:"F",total:"39"},
-        {rank:"4",player:"Arnon Masoot",score:"+8",thru:"F",total:"43"}
+      { name: "T12", rows: [
+        { player: "Tawin Sae-ung", score: "-2", thru: "F", total: "35" },
+        { player: "morsiam", score: "+4", thru: "F", total: "39" },
+        { player: "Arnon Masoot", score: "+8", thru: "F", total: "43" }
       ]},
-      {name:"T13",rows:[
-        {rank:"1",player:"swing kings golf bkk",score:"-1",thru:"F",total:"34"},
-        {rank:"2",player:"Dr.Toni",score:"+7",thru:"F",total:"42"},
-        {rank:"4",player:"joeyth",score:"+12",thru:"F",total:"47"}
+      { name: "T13", rows: [
+        { player: "swing kings golf bkk", score: "-1", thru: "F", total: "34" },
+        { player: "Dr.Toni", score: "+7", thru: "F", total: "42" },
+        { player: "joeyth", score: "+12", thru: "F", total: "47" }
       ]}
     ];
 
-    // Filter to only properly-structured rows
-    const cleanRows = [];
-    RAW_DATA.forEach(t => {
-      t.rows.forEach(r => {
-        // Only include rows where player doesn't look like a score/thru value
-        if (!r.player) return;
-        const playerOk = !r.player.match(/^[+-]?\d+$/) && !r.player.match(/^(E|F)$/);
-        const scoreOk = r.score && r.score.match(/^([EW]|[+-]?\d+)$/);
-        if (playerOk && scoreOk) {
-          cleanRows.push({ ...r, tournament: t.name });
-        }
-      });
-    });
-
     // ─── STATE ─────────────────────────────────────────────
     let sortMode = 'score';
-    const tournaments = RAW_DATA.map(t => ({ name: t.name, count: t.rows.filter(r => r.player && !r.player.match(/^[+-]?\d+$/) && r.score && r.score.match(/^([EW]|[+-]?\d+)$/)).length }));
+    const allRows = [];
+    CLEAN_DATA.forEach(t => {
+      t.rows.forEach(r => {
+        allRows.push({ ...r, tournament: t.name });
+      });
+    });
+    const tournaments = CLEAN_DATA.map(t => ({ name: t.name, count: t.rows.length }));
 
     // ─── INIT ────────────────────────────────────────────────
     function init() {
@@ -175,11 +163,8 @@
       renderTournamentPills();
       renderTable();
       const activeCount = tournaments.filter(t => t.count > 0).length;
-      const totalRows = cleanRows.length;
       document.getElementById('subtitle').textContent =
-        `${activeCount} tournaments with data • ${totalRows} total players`;
-      document.getElementById('lastUpdated').textContent =
-        'Data as of: ' + new Date().toLocaleString();
+        `${activeCount} tournaments with data • ${allRows.length} total players`;
     }
 
     function setupFilterOptions() {
@@ -201,7 +186,6 @@
         if (t.count > 0) btn.onclick = () => {
           document.getElementById('filterSelect').value = t.name;
           renderTable();
-          document.getElementById('filterSelect').scrollIntoView();
         };
         c.appendChild(btn);
       });
@@ -213,13 +197,11 @@
       const search = document.getElementById('searchInput').value.toLowerCase();
       const filter = document.getElementById('filterSelect').value;
 
-      let rows = filter === 'all' ? cleanRows : cleanRows.filter(r => r.tournament === filter);
+      let rows = filter === 'all' ? allRows : allRows.filter(r => r.tournament === filter);
       if (search) rows = rows.filter(r => r.player.toLowerCase().includes(search));
 
       rows.sort((a, b) => {
         if (sortMode === 'name') return a.player.localeCompare(b.player);
-        if (sortMode === 'tournament') return a.tournament.localeCompare(b.tournament);
-        // score
         const sa = parseScore(a.score), sb = parseScore(b.score);
         if (sa !== sb) return sa - sb;
         return a.player.localeCompare(b.player);
@@ -241,12 +223,11 @@
         const sc = getScoreClass(r.score);
         const scoreDisplay = r.score === 'E' ? 'E' : r.score;
         const p = escape(r.player);
-        const t = escape(r.tournament);
 
         return `<tr class="hover:bg-emerald-50 transition-colors ${rowClass} ${rankClass}">
           <td class="px-3 py-2.5 text-center font-bold">${rank}</td>
           <td class="px-3 py-2.5 font-medium text-gray-800">${p}</td>
-          <td class="px-3 py-2.5 text-xs text-gray-500">${t}</td>
+          <td class="px-3 py-2.5 text-xs text-gray-500">${r.tournament}</td>
           <td class="px-3 py-2.5 text-center font-bold ${sc}">${scoreDisplay}</td>
           <td class="px-3 py-2.5 text-center text-gray-400">${r.thru || '-'}</td>
           <td class="px-3 py-2.5 text-center text-gray-400">${r.total || '-'}</td>
@@ -254,7 +235,6 @@
       }).join('');
     }
 
-    // ─── HELPERS ─────────────────────────────────────────────
     function parseScore(s) {
       if (s === 'E') return 0;
       if (!s) return Infinity;
@@ -277,25 +257,6 @@
     function toggleSort() {
       sortMode = sortMode === 'score' ? 'name' : 'score';
       renderTable();
-    }
-
-    function refreshData() {
-      const btn = document.getElementById('refreshBtn');
-      const icon = document.getElementById('refreshIcon');
-      const label = document.getElementById('refreshLabel');
-      icon.style.animation = 'spin 1s linear infinite';
-      btn.disabled = true;
-      label.textContent = 'Loading...';
-
-      // Re-run scraper via fetch (needs server running)
-      fetch('scrape_table.js?t=' + Date.now())
-        .catch(() => {})
-        .finally(() => {
-          icon.style.animation = '';
-          btn.disabled = false;
-          label.textContent = 'Refresh';
-          location.reload();
-        });
     }
 
     init();
