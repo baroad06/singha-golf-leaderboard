@@ -12,11 +12,8 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY . .
-RUN chmod +x rescrape_all16.js
+RUN chmod +x rescrape_all16.js entrypoint.sh
 
 EXPOSE 3000
 
-# Launch both the API server and the scraper in background
-CMD node server.js & \
-    sleep 3 && node rescrape_all16.js && \
-    node server.js
+CMD ["./entrypoint.sh"]
