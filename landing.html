@@ -26,17 +26,12 @@
   <div class="max-w-6xl mx-auto px-4 py-6">
 
     <!-- Header -->
+    <!-- Header -->
     <div class="flex items-center justify-between mb-5">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">🏌️ Combined Golf Leaderboard</h1>
         <p class="text-sm text-gray-500 mt-1" id="subtitle">Loading...</p>
       </div>
-      <button id="refreshBtn" onclick="refreshData()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition-all active:scale-95">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-        </svg>
-        Refresh
-      </button>
     </div>
 
     <!-- Tournament pills -->
@@ -47,13 +42,7 @@
       <input type="text" id="searchInput" placeholder="🔍 Search player..." oninput="renderTable()" class="flex-1 min-w-[180px] text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
       <select id="filterSelect" onchange="renderTable()" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
         <option value="all">All Tournaments</option>
-      </select>
-      <select id="sortSelect" onchange="renderTable()" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        <option value="score">Sort by Score</option>
-        <option value="name">Sort by Name</option>
-        <option value="tournament">Sort by Tournament</option>
-      </select>
-      <div class="ml-auto text-sm text-gray-500" id="totalCount">—</div>
+      </select><div class="ml-auto text-sm text-gray-500" id="totalCount">—</div>
     </div>
 
     <!-- Table -->
@@ -79,7 +68,7 @@
       </div>
     </div>
 
-    <div class="text-center text-xs text-gray-400 mt-4">Data scraped from Trackman Golf Portal • Refresh to update</div>
+    <div class="text-center text-xs text-gray-400 mt-4">Data scraped from Trackman Golf Portal</div>
   </div>
 
   <script>
@@ -150,17 +139,13 @@
       const tbody = document.getElementById('tableBody');
       const search = document.getElementById('searchInput').value.toLowerCase();
       const filter = document.getElementById('filterSelect').value;
-      const sort = document.getElementById('sortSelect').value;
-
       let rows = filter === 'all' ? allRows : allRows.filter(r => r.tournament === filter);
       if (search) rows = rows.filter(r => r.player.toLowerCase().includes(search));
 
       // Golf ranking: same score = same rank, next rank skips accordingly
       rows.sort((a, b) => {
-        if (sort === 'name') return a.player.localeCompare(b.player);
-        if (sort === 'tournament') return a.tournament.localeCompare(b.tournament);
         const sa = parseScore(a.score), sb = parseScore(b.score);
-        return sa !== sb ? sa - sb : a.player.localeCompare(b.player);
+        return sa - sb;
       });
 
       // Assign golf ranks
@@ -200,21 +185,6 @@
     }
 
     init();
-
-    async function refreshData() {
-      const btn = document.getElementById("refreshBtn");
-      if (btn) { btn.disabled = true; btn.textContent = "Refreshing..."; }
-      try {
-        const res = await fetch("/api/refresh", { method: "POST", headers: { "Content-Type": "application/json" } });
-        const data = await res.json();
-        if (data.ok) { location.reload(); } else { alert("Refresh failed: " + data.error); }
-      } catch(e) {
-        // Fallback: just reload
-        location.reload();
-      } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh`; }
-      }
-    }
-  </script>
+</script>
 </body>
 </html>
