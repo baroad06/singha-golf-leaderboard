@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Generated files
+shots/
+t1_text.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.local
