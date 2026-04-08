@@ -31,7 +31,7 @@
         <h1 class="text-2xl font-bold text-gray-800">🏌️ Combined Golf Leaderboard</h1>
         <p class="text-sm text-gray-500 mt-1" id="subtitle">Loading...</p>
       </div>
-      <button onclick="location.reload()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition-all active:scale-95">
+      <button id="refreshBtn" onclick="refreshData()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition-all active:scale-95">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
         </svg>
@@ -188,6 +188,21 @@
     }
 
     init();
+
+    async function refreshData() {
+      const btn = document.getElementById("refreshBtn");
+      if (btn) { btn.disabled = true; btn.textContent = "Refreshing..."; }
+      try {
+        const res = await fetch("/api/refresh", { method: "POST", headers: { "Content-Type": "application/json" } });
+        const data = await res.json();
+        if (data.ok) { location.reload(); } else { alert("Refresh failed: " + data.error); }
+      } catch(e) {
+        // Fallback: just reload
+        location.reload();
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh`; }
+      }
+    }
   </script>
 </body>
 </html>
