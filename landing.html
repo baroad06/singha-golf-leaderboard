@@ -155,11 +155,23 @@
       let rows = filter === 'all' ? allRows : allRows.filter(r => r.tournament === filter);
       if (search) rows = rows.filter(r => r.player.toLowerCase().includes(search));
 
+      // Golf ranking: same score = same rank, next rank skips accordingly
       rows.sort((a, b) => {
         if (sort === 'name') return a.player.localeCompare(b.player);
         if (sort === 'tournament') return a.tournament.localeCompare(b.tournament);
         const sa = parseScore(a.score), sb = parseScore(b.score);
         return sa !== sb ? sa - sb : a.player.localeCompare(b.player);
+      });
+
+      // Assign golf ranks
+      rows.forEach((r, idx) => {
+        if (idx === 0) { r._rank = 1; return; }
+        const prev = rows[idx - 1];
+        if (parseScore(r.score) === parseScore(prev.score)) {
+          r._rank = prev._rank;
+        } else {
+          r._rank = idx + 1;
+        }
       });
 
       document.getElementById('totalCount').textContent = `${rows.length} players`;
@@ -171,7 +183,7 @@
       document.getElementById('noDataMsg').classList.add('hidden');
 
       tbody.innerHTML = rows.map((r, i) => {
-        const rank = i + 1;
+        const rank = r._rank;
         const rankClass = rank <= 3 ? `rank-${rank}` : '';
         const rowClass = i % 2 === 0 ? 'even' : 'odd';
         const sc = getScoreClass(r.score);
